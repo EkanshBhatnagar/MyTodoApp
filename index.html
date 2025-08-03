@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo Manager</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .todo-list {
+            padding: 20px;
+        }
+
+        .todo-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .todo-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .todo-title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .todo-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .priority {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .priority-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .priority-low {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-done {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-ongoing {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-delayed {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .todo-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .todo-content {
+            padding: 15px;
+        }
+
+        .todo-subitems {
+            margin-top: 10px;
+        }
+
+        .subitem {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+        }
+
+        .subitem:last-child {
+            border-bottom: none;
+        }
+
+        .subitem-text {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            background: transparent;
+        }
+
+        .subitem-text:focus {
+            outline: 1px solid #007bff;
+            background: #f8f9fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .subitem-input {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .subitem-input input {
+            flex: 1;
+        }
+
+        .email-preview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                justify-content: center;
+            }
+
+            .todo-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .todo-meta {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 ToDo Manager</h1>
+            <p>Organize your tasks with priorities and track your progress</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn-success" onclick="openAddModal()">➕ Add New Task</button>
+                <button class="btn-warning" onclick="generateWeeklyReport()">📧 Weekly Report</button>
+            </div>
+            
+            <div class="control-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy" onchange="sortTasks()">
+                    <option value="date">Date Created</option>
+                    <option value="priority">Priority</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <button class="btn-primary" onclick="exportData()">💾 Export</button>
+                <button class="btn-primary" onclick="document.getElementById('importFile').click()">📁 Import</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData()">
+            </div>
+        </div>
+
+        <div class="todo-list" id="todoList">
+            <!-- Todo items will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add New Task</h2>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title:</label>
+                    <input type="text" id="taskTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskPriority">Priority:</label>
+                    <select id="taskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskStatus">Status:</label>
+                    <select id="taskStatus">
+                        <option value="ongoing">Ongoing</option>
+                        <option value="done">Done</option>
+                        <option value="delayed">Delayed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Sub-items:</label>
+                    <div id="subItemsContainer">
+                        <!-- Sub-items will be added here -->
+                    </div>
+                    <button type="button" class="btn-primary btn-small" onclick="addSubItemInput()">+ Add Sub-item</button>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-success">Save Task</button>
+                    <button type="button" class="btn-danger" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Weekly Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <h2>📧 Weekly Report</h2>
+            <div class="email-preview" id="emailPreview"></div>
+            <div class="form-group">
+                <button class="btn-primary" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                <button class="btn-danger" onclick="closeReportModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+        let editingId = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTodos();
+        });
+
+        // Todo class
+        class Todo {
+            constructor(title, priority = 'medium', status = 'ongoing', subItems = []) {
+                this.id = Date.now() + Math.random();
+                this.title = title;
+                this.priority = priority;
+                this.status = status;
+                this.subItems = subItems;
+                this.createdAt = new Date();
+                this.updatedAt = new Date();
+            }
+        }
+
+        // Save to localStorage
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        // Render todos
+        function renderTodos() {
+            const container = document.getElementById('todoList');
+            
+            if (todos.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>No tasks yet!</h3>
+                        <p>Click "Add New Task" to get started.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = todos.map(todo => `
+                <div class="todo-item">
+                    <div class="todo-header">
+                        <div class="todo-title">${todo.title}</div>
+                        <div class="todo-meta">
+                            <span class="priority priority-${todo.priority}">${todo.priority.toUpperCase()}</span>
+                            <span class="status status-${todo.status}">${todo.status.toUpperCase()}</span>
+                            <span class="todo-date">${new Date(todo.createdAt).toLocaleDateString()}</span>
+                            <div>
+                                <button class="btn-primary btn-small" onclick="editTodo(${todo.id})">✏️ Edit</button>
+                                <button class="btn-danger btn-small" onclick="deleteTodo(${todo.id})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="todo-content">
+                        <div class="todo-subitems">
+                            ${todo.subItems.map((item, index) => `
+                                <div class="subitem">
+                                    <span style="color: #666; font-weight: bold;">${index + 1}.</span>
+                                    <input type="text" class="subitem-text" value="${item}" 
+                                           onchange="updateSubItem(${todo.id}, ${index}, this.value)"
+                                           onblur="saveTodos()">
+                                    <button class="btn-danger btn-small" onclick="deleteSubItem(${todo.id}, ${index})">✖</button>
+                                </div>
+                            `).join('')}
+                            ${todo.subItems.length === 0 ? '<p style="color: #666; font-style: italic;">No sub-items</p>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Sort tasks
+        function sortTasks() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            if (sortBy === 'priority') {
+                const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+                todos.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+            } else {
+                todos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            }
+            
+            renderTodos();
+        }
+
+        // Open add modal
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Task';
+            document.getElementById('taskForm').reset();
+            document.getElementById('subItemsContainer').innerHTML = '';
+            addSubItemInput();
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+
+        // Add sub-item input
+        function addSubItemInput(value = '') {
+            const container = document.getElementById('subItemsContainer');
+            const div = document.createElement('div');
+            div.className = 'subitem-input';
+            div.innerHTML = `
+                <input type="text" placeholder="Enter sub-item" value="${value}">
+                <button type="button" class="btn-danger btn-small" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Handle form submission
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('taskTitle').value;
+            const priority = document.getElementById('taskPriority').value;
+            const status = document.getElementById('taskStatus').value;
+            
+            const subItems = Array.from(document.querySelectorAll('#subItemsContainer input'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            if (editingId) {
+                // Update existing todo
+                const todo = todos.find(t => t.id === editingId);
+                if (todo) {
+                    todo.title = title;
+                    todo.priority = priority;
+                    todo.status = status;
+                    todo.subItems = subItems;
+                    todo.updatedAt = new Date();
+                }
+            } else {
+                // Create new todo
+                const newTodo = new Todo(title, priority, status, subItems);
+                todos.push(newTodo);
+            }
+
+            saveTodos();
+            renderTodos();
+            closeModal();
+        });
+
+        // Edit todo
+        function editTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Task';
+            document.getElementById('taskTitle').value = todo.title;
+            document.getElementById('taskPriority').value = todo.priority;
+            document.getElementById('taskStatus').value = todo.status;
+
+            const container = document.getElementById('subItemsContainer');
+            container.innerHTML = '';
+            
+            if (todo.subItems.length === 0) {
+                addSubItemInput();
+            } else {
+                todo.subItems.forEach(item => addSubItemInput(item));
+            }
+
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        // Delete todo
+        function deleteTodo(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                todos = todos.filter(t => t.id !== id);
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        // Update sub-item
+        function updateSubItem(todoId, index, value) {
+            const todo = todos.find(t => t.id === todoId);
+            if (todo && todo.subItems[index] !== undefined) {
+                todo.subItems[index] = value;
+                todo.updatedAt = new Date();
+            }
+        }
+
+        // Delete sub-item
+        function deleteSubItem(todoId, index) {
+            const todo = todos.find(t => t.id === todoId);
+            if (todo) {
+                todo.subItems.splice(index, 1);
+                todo.updatedAt = new Date();
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        // Generate weekly report
+        function generateWeeklyReport() {
+            const now = new Date();
+            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            const report = `Weekly Task Report
+${weekStart.toDateString()} - ${weekEnd.toDateString()}
+
+=== COMPLETED TASKS ===
+${todos.filter(t => t.status === 'done').map(todo => 
+    `• ${todo.title} [${todo.priority.toUpperCase()} PRIORITY]
+${todo.subItems.map((item, i) => `  ${i + 1}. ${item}`).join('\n')}`
+).join('\n\n') || 'No completed tasks this week.'}
+
+=== ONGOING TASKS ===
+${todos.filter(t => t.status === 'ongoing').map(todo => 
+    `• ${todo.title} [${todo.priority.toUpperCase()} PRIORITY]
+${todo.subItems.map((item, i) => `  ${i + 1}. ${item}`).join('\n')}`
+).join('\n\n') || 'No ongoing tasks.'}
+
+=== DELAYED TASKS ===
+${todos.filter(t => t.status === 'delayed').map(todo => 
+    `• ${todo.title} [${todo.priority.toUpperCase()} PRIORITY]
+${todo.subItems.map((item, i) => `  ${i + 1}. ${item}`).join('\n')}`
+).join('\n\n') || 'No delayed tasks.'}
+
+=== SUMMARY ===
+Total Tasks: ${todos.length}
+Completed: ${todos.filter(t => t.status === 'done').length}
+Ongoing: ${todos.filter(t => t.status === 'ongoing').length}
+Delayed: ${todos.filter(t => t.status === 'delayed').length}
+
+High Priority: ${todos.filter(t => t.priority === 'high').length}
+Medium Priority: ${todos.filter(t => t.priority === 'medium').length}
+Low Priority: ${todos.filter(t => t.priority === 'low').length}`;
+
+            document.getElementById('emailPreview').textContent = report;
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        // Close report modal
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const text = document.getElementById('emailPreview').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Report copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Report copied to clipboard!');
+            });
+        }
+
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(todos, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `todos-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedTodos = JSON.parse(e.target.result);
+                    if (Array.isArray(importedTodos)) {
+                        if (confirm('This will replace all current tasks. Continue?')) {
+                            todos = importedTodos;
+                            saveTodos();
+                            renderTodos();
+                            alert('Data imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid file format!');
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const taskModal = document.getElementById('taskModal');
+            const reportModal = document.getElementById('reportModal');
+            
+            if (event.target === taskModal) {
+                taskModal.style.display = 'none';
+            }
+            if (event.target === reportModal) {
+                reportModal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
